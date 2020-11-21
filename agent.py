@@ -64,16 +64,6 @@ class DeepQAgent( Agent ):
             raise ValueError( 'Model type must be either "prediction" or "target"' )
 
         return q_vals 
-    
-    def get_max_Q_val( self, observation, model ):
-        '''
-        Returns the max Q value and index of the action that generated it 
-        from either the prediction or target model
-        '''
-        
-        q_vals = self.get_Q_vals( observation, model )
-
-        return q_vals.argmax(), q_vals.max()
 
     
     def update_target_model( self ):
@@ -93,10 +83,3 @@ class DeepQAgent( Agent ):
         else:
             return q_vals.argmax().detach().numpy()
         
-    def get_max_target_Q_val( self, observation ):
-        '''
-        Returns the max Q value of the target model
-        '''
-        idx_max, max_q = self.get_max_Q_val( observation, self.target_model )
-        
-        return max_q
