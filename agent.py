@@ -30,24 +30,17 @@ class DeepQAgent( Agent ):
     '''
     Uses model to decide which action to take
     '''
-    def __init__( self, action_space, obervation_space, model, discount_rate=0.95, rand_prob=0 ):
+    def __init__( self, action_space, obervation_space, model, discount_rate=0.95, rand_prob=0,
+                device=None ):
         super().__init__( action_space, obervation_space )
     
-        self.target_model = deepcopy( model )
-        self.prediction_model = deepcopy( model )
+        self.target_model = deepcopy( model ).to( device )
+        self.prediction_model = deepcopy( model ).to( device )
+        self.device = device
+        
         self.discount_rate = discount_rate
         # set as attribute
         self.rand_prob = rand_prob
-        
-#     def get_Q( self, x, model ):
-#         '''
-#         Returns Q Value of either target or prediction model for any x   
-        
-#         Args:
-#             x (np.ndarray): np array with action first then observation
-#             model (nn.Module): either target or prediction model
-#         '''
-#         return model( Tensor( x ) )
     
     def get_Q_vals( self, x, model ):
         '''
@@ -57,17 +50,20 @@ class DeepQAgent( Agent ):
         Args:
             x (np.ndarray): np array with action first then observation
         '''
-        
-#         q_vals = {}
-        
-#         for i in range( self.action_space.n ):
-                
-#             x = np.concatenate( [ np.array( [i] ), observation ], axis=-1 )
-#             q_vals[ i ] = self.get_Q( x, model )
+        if type( x ) != Tensor:
+            x = Tensor( x )
             
-#         return q_vals
+        x = x.to( self.device )
+        
+        q_vals = None
+        if model == 'prediction':
+            q_vals = self.prediction_model( x )
+        elif model == 'target':
+            q_vals = self.target_model( x )
+        else:
+            raise ValueError( 'Model type must be either "prediction" or "target"' )
 
-        return model( Tensor( x ) ) 
+        return q_vals 
     
     def get_max_Q_val( self, observation, model ):
         '''
@@ -77,7 +73,6 @@ class DeepQAgent( Agent ):
         
         q_vals = self.get_Q_vals( observation, model )
 
-                
         return q_vals.argmax(), q_vals.max()
 
     
@@ -89,12 +84,14 @@ class DeepQAgent( Agent ):
     
     def act( self, observation ):
         
-        best_action, max_q = self.get_max_Q_val( observation, self.prediction_model )
+        observation = Tensor( observation, device=self.device )
+        
+        q_vals = self.get_Q_vals( observation, 'prediction' )
             
         if np.random.rand() < self.rand_prob:
             return self.action_space.sample()
         else:
-            return best_action.detach().numpy()
+            return q_vals.argmax().detach().numpy()
         
     def get_max_target_Q_val( self, observation ):
         '''

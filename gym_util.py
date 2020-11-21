@@ -19,13 +19,9 @@ def run_episode( env, agent, timesteps=100, verbose=False, render=False ):
         
         observation, r, done, info = env.step( action )
         
-#         print( r )
-#         print( done )
-#         print( agent.get_Q_vals( observation, agent.target_model ).detach().numpy() )
-        
         reward = 1 - 2*done
         
-        rewards[ t ] = reward + agent.discount_rate * agent.get_Q_vals( observation, agent.target_model ).detach().numpy()
+        rewards[ t ] = reward + agent.discount_rate * agent.get_Q_vals( observation, 'target' ).detach().numpy()
         
         if done == 1:
             if verbose:
