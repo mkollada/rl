@@ -74,7 +74,8 @@ class DeepQAgent( Agent ):
     
     def act( self, observation ):
         
-        observation = Tensor( observation, device=self.device )
+        observation = Tensor( observation )
+        observation = observation.to( self.device )
         
         q_vals = self.get_Q_vals( observation, 'prediction' )
             
