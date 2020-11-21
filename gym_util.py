@@ -21,7 +21,8 @@ def run_episode( env, agent, timesteps=100, verbose=False, render=False ):
         
         reward = 1 - 2*done
         
-        rewards[ t ] = reward + agent.discount_rate * agent.get_Q_vals( observation, 'target' ).detach().numpy()
+        rewards[ t ] = reward + agent.discount_rate * \
+          agent.get_Q_vals( observation, 'target' ).detach().cpu().numpy()
         
         if done == 1:
             if verbose:

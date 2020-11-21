@@ -42,7 +42,7 @@ class DeepQAgent( Agent ):
         # set as attribute
         self.rand_prob = rand_prob
     
-    def get_Q_vals( self, x, model ):
+    def get_Q_vals( self, x, model_type ):
         '''
         Returns Q values for all actions in the agents action space for 
         target or prediction model
@@ -56,11 +56,12 @@ class DeepQAgent( Agent ):
         x = x.to( self.device )
         
         q_vals = None
-        if model == 'prediction':
+        if model_type == 'prediction':
             q_vals = self.prediction_model( x )
-        elif model == 'target':
+        elif model_type == 'target':
             q_vals = self.target_model( x )
         else:
+            print( model_type )
             raise ValueError( 'Model type must be either "prediction" or "target"' )
 
         return q_vals 
@@ -82,5 +83,5 @@ class DeepQAgent( Agent ):
         if np.random.rand() < self.rand_prob:
             return self.action_space.sample()
         else:
-            return q_vals.argmax().detach().numpy()
+            return q_vals.argmax().detach().cpu().numpy()
         
